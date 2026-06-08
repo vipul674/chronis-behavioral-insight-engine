@@ -60,7 +60,7 @@ CSV Loading → Validation → Sufficiency Checks → Pattern Discovery → Anom
 
 3. `patterns.py` takes the first 7 and last 7 valid observations for each metric, computes their means, and calculates percent change. Changes of 10% or more get classified as increasing or declining. Below that, it calls it stable and abstains.
 
-4. `anomalies.py` computes a per-user, per-metric z-score for every day. Anything with |z| >= 1.5 gets flagged. Severity: >= 3.0 is high, >= 2.5 is medium, >= 1.5 is low.
+4. `anomalies.py` computes a per-user, per-metric z-score for every day. Anything with |z| >= 1.5 gets flagged. Severity: >= 3.0 is high, >= 2.5 is medium, 1.5 to 2.5 is low.
 
 5. `insights.py` combines pattern and anomaly results with the sufficiency checks. It emits either a claim (with confidence) or an abstention (confidence 0.0).
 
@@ -74,7 +74,7 @@ For each user and metric, extract the first 7 and last 7 valid observations. Com
 
 ### Anomaly Detection
 
-Per-user, per-metric z-scores. Each observation is compared against that user's own mean and standard deviation for that metric. Observations with |z| >= 1.5 are flagged as anomalies.
+Per-user, per-metric z-scores. Each observation is compared against that user's own mean and standard deviation for that metric. Observations with |z| >= 1.5 are flagged as anomalies. This threshold is intentionally somewhat sensitive because the dataset contains only 30 days per user, and the goal is to surface unusual changes for review rather than make high-stakes conclusions.
 
 ### Confidence Scoring
 
@@ -113,8 +113,8 @@ The system abstains (status="abstain", confidence=0.0) when:
   "metric": "steps",
   "insight_type": "trend",
   "insight": "Physical activity declined over the observed period.",
-  "confidence": 0.68,
-  "evidence": "Average daily steps changed from 8173.8 to 7222.7, a -11.6% change.",
+  "confidence": 0.57,
+  "evidence": "Average daily steps changed from 8298.7 in the first 7 observations to 7426.0 in the most recent 7 observations, a -10.5% change.",
   "status": "claim",
   "reason": "strong_directional_change"
 }
@@ -130,7 +130,7 @@ The system abstains (status="abstain", confidence=0.0) when:
   "insight_type": "trend",
   "insight": "Sleep duration showed no strong directional change over the observed period.",
   "confidence": 0.0,
-  "evidence": "Average daily sleep_hours changed from 6.8 to 7.1, a 4.4% change.",
+  "evidence": "Average daily sleep_hours changed from 6.7 in the first 7 observations to 6.7 in the most recent 7 observations, a 0.0% change.",
   "status": "abstain",
   "reason": "weak_change_signal"
 }
@@ -140,15 +140,16 @@ The system abstains (status="abstain", confidence=0.0) when:
 
 ```json
 {
-  "user_id": "U2",
-  "domain": "digital_behavior",
-  "metric": "screen_time_hours",
-  "insight_type": "anomaly",
-  "insight": "Screen time showed a medium-severity spike on 2026-01-29.",
-  "confidence": 0.78,
-  "evidence": "Screen time on 2026-01-29 was 8.9 hours, which is 2.7 standard deviations above this user's baseline of 5.8 hours.",
-  "status": "claim",
-  "reason": "statistical_outlier"
+  "user_id": "U1",
+  "date": "2026-01-06",
+  "metric": "steps",
+  "domain": "physical_activity",
+  "observed_value": 11922.0,
+  "baseline_mean": 7872.0,
+  "baseline_std": 2636.86,
+  "z_score": 1.54,
+  "severity": "low",
+  "explanation": "Steps on 2026-01-06 was 11922, which is 1.5 standard deviations above this user's baseline of 7872.0."
 }
 ```
 
@@ -185,6 +186,21 @@ The system describes what the data shows. It does not interpret what that means 
 | tests/ | Test suite for all core logic |
 | src/ | Source code for the insight engine |
 
+## Validation
+
+The project was validated by running:
+
+```bash
+python -m src.main --input data/Chronis_TaskA_Synthetic_Behavioral_Data_v2-2.csv --output results
+pytest
+```
+
+The first command generates the worked examples in `results/`. The test suite verifies sufficiency checks, trend detection, anomaly detection, and insight generation behavior.
+
+## Repository Readiness
+
+The repository is designed to be reviewed from a fresh clone. After installing dependencies, the evaluator can run the system with one command and inspect generated outputs in the `results/` folder.
+
 ## Final Note
 
-This repository contains a complete Task A Behavioral Insight Engine with single-command execution, worked results, tests, decisions documentation, evidence sufficiency checks, abstention behavior, and explainable insight generation.
+This repository contains an assessment-ready Task A Behavioral Insight Engine with single-command execution, worked results, tests, decisions documentation, evidence sufficiency checks, abstention behavior, and explainable insight generation.

@@ -22,7 +22,7 @@ What it misses: monotonic trends that reverse near the end, non-linear patterns,
 
 I use per-user, per-metric z-scores with a threshold of 1.5 standard deviations. Each observation is compared against that user's own mean and standard deviation for that metric.
 
-Why z-scores? They are interpretable, require no training, and per-user baselines account for individual differences. A threshold of 1.5 catches observations outside roughly the 7th and 93rd percentiles, which felt right for a 30-day window.
+Why 1.5? The assessment dataset contains only 30 days per user. A threshold of 2.0 would miss unusual events in a short window. At 1.5, the system surfaces more signals for review, which is appropriate when the goal is to identify changes worth examining rather than make high-stakes judgments. Per-user baselines account for individual differences in activity levels.
 
 What it misses: gradual drift, contextual anomalies, and cases where a single outlier inflates the standard deviation and masks other outliers. It also assumes roughly normal distributions.
 
@@ -78,6 +78,8 @@ If any check fails, the system abstains with one of these reasons:
 3. Gradual drift. The windowed comparison only sees end-to-end change. A metric that went up then down would look stable.
 
 4. Correlated metrics. The system analyzes each metric independently. It does not detect that increased screen time correlates with decreased sleep, for example.
+
+5. Small sample anomaly sensitivity. With only 30 observations per user, a z-score threshold of 1.5 may flag more events than a production system would. This is intentional for the assessment setting: flagged anomalies are treated as reviewable signals, not final judgments.
 
 ## Safety and Refusal Logic
 

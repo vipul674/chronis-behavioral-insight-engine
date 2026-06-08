@@ -2,6 +2,8 @@
 
 Analyzes daily behavioral data (steps, sleep, screen time, deep work, exercise) across multiple users. It spots trends, flags unusual days, and produces confidence-scored insights. When the data is too weak to support a claim, it abstains instead of guessing.
 
+This project is built for Chronis Task A: Behavioral Insight Engine, which requires pattern discovery, anomaly detection, evidence-backed insight generation, evidence sufficiency checks, worked examples, tests, and methodology documentation.
+
 ## Demo
 
 ```bash
@@ -75,8 +77,8 @@ Compares the first 7 observations against the last 7 for each metric:
 Per-user, per-metric z-scores:
 - |z| >= 1.5 is flagged as anomaly
 - |z| >= 3.0 is high severity
-- |z| >= 2.5 is medium severity
-- Below that is low severity
+- 2.5 <= |z| < 3.0 is medium severity
+- 1.5 <= |z| < 2.5 is low severity
 
 ### Confidence Scoring
 
@@ -87,17 +89,17 @@ Per-user, per-metric z-scores:
 ## Example Output
 
 Claim insight:
-> Physical activity increased over the observed period.
-> Evidence: Average daily steps changed from 7920.4 to 5810.2, a -26.6% change.
-> Confidence: 0.72
+> Physical activity declined over the observed period.
+> Evidence: Average daily steps changed from 8298.7 to 7426.0, a -10.5% change.
+> Confidence: 0.57
 
 Abstention insight:
 > Sleep duration data was insufficient to support a directional claim.
 > Reason: insufficient_history
 
 Anomaly insight:
-> Screen time showed a low-severity spike on 2026-01-07.
-> Evidence: Screen time on 2026-01-07 was 8.9 hours, which is 2.1 standard deviations above this user's baseline of 5.1 hours.
+> Steps showed a low-severity spike on 2026-01-06.
+> Evidence: Steps on 2026-01-06 was 11922, which is 1.5 standard deviations above this user's baseline of 7872.0.
 
 ## Safety
 
