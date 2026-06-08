@@ -1,0 +1,31 @@
+{
+  "total_insights": 96,
+  "total_claims": 84,
+  "total_abstentions": 12,
+  "total_anomalies": 71,
+  "insights_by_domain": {
+    "physical_activity": {
+      "claims": 17,
+      "abstentions": 3
+    },
+    "fitness": {
+      "claims": 18,
+      "abstentions": 2
+    },
+    "sleep": {
+      "claims": 11,
+      "abstentions": 4
+    },
+    "digital_behavior": {
+      "claims": 20,
+      "abstentions": 2
+    },
+    "productivity": {
+      "claims": 18,
+      "abstentions": 1
+    }
+  },
+  "abstention_reasons": {
+    "weak_change_signal": 12
+  }
+}
